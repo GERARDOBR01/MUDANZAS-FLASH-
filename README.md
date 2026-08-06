@@ -26,9 +26,11 @@ Cada flujo tiene un ejemplo terminado (se ve completo) y un flujo de armado
 
 ## Cosas que se tocan al mantenerlo
 
-- `DEMO_NOW` — fecha y hora congeladas. Todo lo que se sella se calcula a
-  partir de esta constante, nunca del reloj real, para que la demo se vea
-  idéntica cada vez que se abre.
+- `DEMO_NOW` — fecha y hora congeladas de los documentos ya terminados.
+  Son registros de una mudanza que ya pasó, así que no se mueven nunca. Lo
+  que el usuario arma en el momento se sella con el reloj real del teléfono:
+  un "sello activo" que no coincide con el reloj del propio celular no prueba
+  nada. El sello corre en vivo, segundo a segundo.
 - `ITEMS` — catálogo de 15 piezas: nombre, volumen, dibujo y `mark` (dónde cae
   la marca de daño en esa captura).
 - `ACTA` y `COT` — datos semilla de los dos ejemplos terminados, escritos a

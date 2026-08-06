@@ -515,7 +515,15 @@
 "use strict";
 
 /* ------------------------------------------------------------------
-   Reloj congelado. La demo se ve idéntica hoy y en tres meses.
+   Dos relojes, a propósito.
+
+   DEMO_NOW congela los documentos ya terminados: son registros de una
+   mudanza que ya pasó, así que su fecha no debe moverse nunca. Se ven
+   idénticos hoy y en tres meses.
+
+   Lo que el usuario arma en el momento se sella con el reloj real del
+   teléfono. El sello es la pieza que vende: si marca una hora distinta
+   a la del propio celular, deja de probar lo que dice probar.
 ------------------------------------------------------------------ */
 var DEMO_NOW = new Date(2026, 7, 6, 9, 14, 0);
 var MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -881,18 +889,17 @@ function markGal(galId, counts){
 /* ------------------------------------------------------------------
    Flujo: armar acta
 ------------------------------------------------------------------ */
-var AB = { regs: [], t: 0 };
+var AB = { regs: [] };
 var abCount = document.getElementById('ab-count');
 var abSeal  = document.getElementById('ab-seal');
 var abList  = document.getElementById('ab-list');
 var abCta   = document.getElementById('ab-cta');
 var abHint  = document.getElementById('ab-hint');
 
-function abNext(){ return plus(DEMO_NOW, AB.t); }
 function abRender(){
   var n = AB.regs.length;
   abCount.textContent = p2(n);
-  abSeal.textContent = fSello(abNext());
+  abSeal.textContent = fSello(new Date());
   abCta.disabled = n === 0;
   abHint.textContent = n === 0 ? 'Registra al menos un bulto'
     : 'Se cierra con ' + n + (n === 1 ? ' bulto sellado' : ' bultos sellados');
@@ -948,7 +955,7 @@ shDmg.addEventListener('click', function(){ setDmg(true); });
 
 function openSheet(id){
   var it = BY[id];
-  SH.id = id; SH.when = abNext();
+  SH.id = id; SH.when = new Date();
   shTitle.textContent = it.nom;
   shName.value = it.nom;
   shNote.value = '';
@@ -965,9 +972,9 @@ document.getElementById('ab-gal').addEventListener('click', function(e){
 });
 shSave.addEventListener('click', function(){
   var nom = shName.value.trim() || BY[SH.id].nom;
+  /* el sello se toma al registrar, no al abrir la hoja */
   AB.regs.push({ k: Date.now() + Math.random(), id: SH.id, nom: nom,
-                 dmg: SH.dmg, nota: shNote.value.trim(), when: SH.when });
-  AB.t += 47 + (AB.regs.length % 5) * 13;
+                 dmg: SH.dmg, nota: shNote.value.trim(), when: new Date() });
   closeSheet();
   abRender();
   bump(abCount);
@@ -1075,8 +1082,7 @@ function runCut(kind){
   document.getElementById('cut-seal-kind').textContent = c.kind;
   document.getElementById('cut-seal-folio').textContent = c.folio;
   document.getElementById('cut-seal-ok').textContent = c.ok;
-  document.getElementById('cut-seal-dt').textContent =
-    fSello(kind === 'acta' ? abNext() : plus(DEMO_NOW, 260));
+  document.getElementById('cut-seal-dt').textContent = fSello(new Date());
 
   show('cut');
   var lis = prog.querySelectorAll('.pl');
@@ -1087,6 +1093,18 @@ function runCut(kind){
   setTimeout(function(){ seal.classList.add('rv'); }, 90 + lis.length * 300 + 380);
   setTimeout(function(){ msg.classList.add('rv'); }, 90 + lis.length * 300 + 1180);
 }
+/* El sello corre. Un "sello activo" que no avanza no prueba nada. */
+setInterval(function(){
+  var d = new Date();
+  if (!document.getElementById('view-acta-build').classList.contains('hide')) {
+    abSeal.textContent = fSello(d);
+  }
+  if (sheet.classList.contains('on')) {
+    SH.when = d;
+    shSeal.textContent = fSello(d);
+  }
+}, 1000);
+
 abCta.addEventListener('click', function(){ if (!abCta.disabled) runCut('acta'); });
 cbCta.addEventListener('click', function(){ if (!cbCta.disabled) runCut('cot'); });
 
